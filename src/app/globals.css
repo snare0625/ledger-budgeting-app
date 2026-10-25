@@ -1,26 +1,204 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/*
+ * Ledger design tokens — source: design/README.md (values from design/Ledger.dc.html).
+ * Light-only by design: the dark surfaces (Sign in, Home hero) use the `dark-*` tokens
+ * directly rather than a dark theme.
+ */
+@theme {
+  /* Color */
+  --color-ink: #0e1113;
+  --color-sub: #868b92;
+  --color-line: #edeff2;
+  --color-sheet: #ffffff;
+  --color-soft: #f5f6f8;
+  --color-blue: #2f66f5;
+  --color-blue-hover: #2551c9;
+  --color-green: #12a150;
+  --color-red: #d64f3a;
+  --color-dark: #0b0c0e;
+  --color-dark-card: rgb(255 255 255 / 0.055);
+  --color-dark-line: rgb(255 255 255 / 0.12);
+  --color-dark-sub: rgb(255 255 255 / 0.55);
+  --color-nav: #17191d;
+  --color-tint-blue: #eef3ff;
+  --color-tint-red: #fdeeeb;
+  --color-track: #e2e5ea; /* progress bar / ring track */
+  --color-toggle-off: #d3d6db;
+  --color-frame: #e7e9ec; /* page backdrop around the phone column */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Category accents (icon tiles use the accent at ~12%: bg-cat-fixed/12) */
+  --color-cat-fixed: #5b6b8c;
+  --color-cat-variable: #c98a2b;
+  --color-cat-savings: #12a150;
+  --color-cat-income: #2f66f5;
+
+  /* Spacing */
+  --spacing-gutter: 22px; /* screen horizontal padding */
+  --spacing-nav-clearance: 110px; /* scroll padding under the floating nav */
+
+  /* Radius */
+  --radius-tile: 12px; /* icon tiles, segmented buttons */
+  --radius-field: 14px; /* inputs, small cards, primary buttons */
+  --radius-card: 18px; /* cards, list groups */
+  --radius-panel: 20px; /* large cards */
+  --radius-hero: 22px; /* hero balance card */
+  --radius-sheet: 28px; /* white sheet top corners */
+
+  /* Type scale (Plus Jakarta Sans) */
+  --text-display: 42px;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 800;
+  --text-title: 28px; /* page h1 */
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 800;
+  --text-title-sm: 26px; /* form / sign-in h1 */
+  --text-title-sm--letter-spacing: -0.02em;
+  --text-title-sm--font-weight: 800;
+  --text-heading: 17px; /* h2, card titles */
+  --text-heading--letter-spacing: -0.01em;
+  --text-heading--font-weight: 800;
+  --text-row: 15.5px; /* list row label / value */
+  --text-body: 15px;
+  --text-label: 14px; /* secondary / sub */
+  --text-tab: 13.5px; /* tab / pill label */
+  --text-overline: 12.5px; /* pair with `uppercase` */
+  --text-overline--letter-spacing: 0.03em;
+  --text-overline--font-weight: 800;
+
+  /* Shadow */
+  --shadow-nav: 0 16px 34px -10px rgb(10 12 14 / 0.5);
+  --shadow-pill: 0 1px 4px rgb(10 12 14 / 0.1);
+  --shadow-success: 0 12px 30px -6px rgb(18 161 80 / 0.5);
+  --shadow-toast: 0 12px 28px rgb(10 12 14 / 0.4);
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.2, 1.4, 0.4, 1);
+  --animate-pop-in: pop-in 0.5s var(--ease-spring) forwards;
+  --animate-fade-up: fade-up 0.3s ease;
+  --animate-shake: shake 0.4s;
+  --animate-draw-check: draw-check 0.4s 0.25s ease forwards;
+
+  @keyframes pop-in {
+    0% { transform: scale(0.4); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fade-up {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(3px); }
+  }
+  /* The checkmark path starts hidden with stroke-dasharray/offset of 24 */
+  @keyframes draw-check {
+    to { stroke-dashoffset: 0; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility bg-hero-gradient {
+  background: radial-gradient(130% 80% at 15% 0%, #1c2027 0%, #0b0c0e 60%);
+}
+@utility bg-signin-gradient {
+  background: radial-gradient(120% 70% at 25% 0%, #1b1f25 0%, #0b0c0e 58%);
+}
+
+/* shadcn/ui semantic tokens, mapped onto the Ledger palette below */
+@theme inline {
+  --font-sans: var(--font-jakarta);
+  --font-heading: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: var(--color-sheet);
+  --foreground: var(--color-ink);
+  --card: var(--color-soft);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-sheet);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-ink);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-soft);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-soft);
+  --muted-foreground: var(--color-sub);
+  --accent: var(--color-soft);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-red);
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-blue);
+  --chart-1: var(--color-blue);
+  --chart-2: var(--color-green);
+  --chart-3: var(--color-cat-variable);
+  --chart-4: var(--color-cat-fixed);
+  --chart-5: var(--color-red);
+  --radius: 0.875rem; /* 14px, so rounded-lg matches inputs/buttons */
+  --sidebar: var(--color-soft);
+  --sidebar-foreground: var(--color-ink);
+  --sidebar-primary: var(--color-ink);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-sheet);
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-blue);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

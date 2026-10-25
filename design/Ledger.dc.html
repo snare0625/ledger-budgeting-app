@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#e7e9ec; font-family:'Plus Jakarta Sans',sans-serif; }
+  a { color:#2f66f5; text-decoration:none; }
+  a:hover { color:#2551c9; }
+  ::-webkit-scrollbar{ display:none; }
+  @keyframes popIn { 0%{transform:scale(.4);opacity:0;} 60%{transform:scale(1.08);opacity:1;} 100%{transform:scale(1);opacity:1;} }
+  @keyframes fadeUp { from{transform:translateY(10px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(3px);} }
+  @keyframes drawCheck { to { stroke-dashoffset:0; } }
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;font-family:'Plus Jakarta Sans',sans-serif;">
+  <div style="width:390px;height:844px;background:#000;border-radius:52px;box-shadow:0 40px 90px -20px rgba(10,12,14,.55),0 0 0 2px #2a2c30;overflow:hidden;position:relative;">
+    <!-- dynamic island -->
+    <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:45;"></div>
+    <!-- status bar -->
+    <div style="position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 9px;font-size:15px;font-weight:700;z-index:40;color:{{ barColor }};">
+      <span>{{ clock }}</span>
+      <span style="display:flex;align-items:center;gap:7px;">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="5" y="5" width="3" height="7" rx="1"></rect><rect x="10" y="2.5" width="3" height="9.5" rx="1"></rect><rect x="15" y="0" width="3" height="12" rx="1"></rect></svg>
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 4.2a11 11 0 0 1 15 0"></path><path d="M3.5 6.8a7.2 7.2 0 0 1 10 0"></path><path d="M6 9.4a3.4 3.4 0 0 1 5 0"></path><circle cx="8.5" cy="11" r="0.7" fill="currentColor" stroke="none"></circle></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="0.6" y="0.6" width="21" height="11.8" rx="3" stroke="currentColor" stroke-width="1.2"></rect><rect x="2.4" y="2.4" width="16" height="8.2" rx="1.5" fill="currentColor"></rect><rect x="23" y="4" width="2" height="5" rx="1" fill="currentColor"></rect></svg>
+      </span>
+    </div>
+    <!-- SCREEN -->
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;">{{ screen }}</div>
+    <!-- toast -->
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;bottom:110px;left:24px;right:24px;background:#0e1113;color:#fff;padding:14px 18px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:0 12px 28px rgba(10,12,14,.4);z-index:60;animation:fadeUp .3s ease;text-align:center;">{{ toast }}</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    route: 'signin', tab: 'Overview',
+    pass: '', passErr: false, loading: false, stamp: false, toast: '',
+    editItem: null, editGoal: null, activeGoal: null, viewCycle: null,
+    cycleName: 'August 2026',
+    items: [
+      {id:1, name:'Rent', cat:'Fixed', amt:1850, on:true},
+      {id:2, name:'Utilities', cat:'Fixed', amt:180, on:true},
+      {id:3, name:'Groceries', cat:'Variable', amt:520, on:true},
+      {id:4, name:'Dining out', cat:'Variable', amt:240, on:true},
+      {id:5, name:'Transit', cat:'Variable', amt:95, on:false},
+      {id:6, name:'Emergency fund', cat:'Savings', amt:400, on:true},
+      {id:7, name:'Roth IRA', cat:'Savings', amt:500, on:true},
+    ],
+    goals: [
+      {id:1, name:'Emergency fund', target:12000, saved:8400, note:'Six months of essentials.'},
+      {id:2, name:'Kyoto trip', target:4500, saved:1650, note:'Two weeks, next spring.'},
+      {id:3, name:'New laptop', target:2400, saved:2400, note:'Done — waiting on the sale.'},
+    ],
+    activity: [
+      {id:1, name:'Whole Foods', cat:'Variable', when:'Today', amt:-64.20},
+      {id:2, name:'Salary', cat:'Income', when:'Aug 1', amt:5200},
+      {id:3, name:'Roth IRA', cat:'Savings', when:'Aug 1', amt:-500},
+      {id:4, name:'Rent', cat:'Fixed', when:'Aug 1', amt:-1850},
+    ],
+    history: [
+      {id:'aug', name:'August 2026', income:5200, spent:3385, saved:900, closed:false},
+      {id:'jul', name:'July 2026', income:5200, spent:3610, saved:900, closed:true},
+      {id:'jun', name:'June 2026', income:5000, spent:3980, saved:700, closed:true},
+      {id:'may', name:'May 2026', income:5000, spent:4120, saved:600, closed:true},
+    ],
+    form: {},
+  };
+
+  componentDidMount(){ this.tick(); this._t=setInterval(()=>this.tick(),15000); }
+  componentWillUnmount(){ clearInterval(this._t); }
+  tick(){ const d=new Date(); this.setState({clock: d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:false})}); }
+
+  ic(name,size=24,color='currentColor',sw=2){
+    const P={
+      home:'', items:'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+      goals:'', history:'M12 7v5l3 2', settings:'',
+      chevR:'M9 6l6 6-6 6', back:'M15 6l-6 6 6 6',
+      inbox:'M4 13h4l1 3h6l1-3h4M4 13l2-8h12l2 8v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z',
+      bell:'M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.5 21a2 2 0 0 0 3 0',
+      wallet:'M3 7h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h11l2 3M17 13h.01',
+      up:'M7 17L17 7M17 7H8M17 7v9', down:'M17 7L7 17M7 17h9M7 17V8',
+    };
+    const c=[];
+    if(name==='home'){ c.push(React.createElement('path',{key:1,d:'M3.5 10.5L12 4l8.5 6.5'}),React.createElement('path',{key:2,d:'M5.5 9.5V20h13V9.5'})); }
+    else if(name==='goals'){ c.push(React.createElement('circle',{key:1,cx:12,cy:12,r:8}),React.createElement('circle',{key:2,cx:12,cy:12,r:3.4})); }
+    else if(name==='history'){ c.push(React.createElement('circle',{key:1,cx:12,cy:12,r:8}),React.createElement('path',{key:2,d:P.history})); }
+    else if(name==='settings'){ c.push(React.createElement('circle',{key:1,cx:12,cy:12,r:3}),React.createElement('path',{key:2,d:'M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1'})); }
+    else if(name==='backspace'){ c.push(React.createElement('path',{key:1,d:'M20 6H9L4 12l5 6h11a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z'}),React.createElement('path',{key:2,d:'M15 9l-4 6M11 9l4 6'})); }
+    else { c.push(React.createElement('path',{key:1,d:P[name]||''})); }
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},c);
+  }
+
+  go(route, extra={}){ this.setState({route, ...extra}); }
+  flash(msg){ this.setState({toast:msg}); clearTimeout(this._toast); this._toast=setTimeout(()=>this.setState({toast:''}),1900); }
+  money(n){ const neg=n<0; return (neg?'-$':'$')+Math.abs(Number(n)).toLocaleString('en-US',{minimumFractionDigits:Number.isInteger(n)?0:2,maximumFractionDigits:2}); }
+  setForm(k,v){ this.setState(s=>({form:{...s.form,[k]:v}})); }
+
+  C(){ return {
+    sheet:'#ffffff', soft:'#f5f6f8', ink:'#0e1113', sub:'#868b92', line:'#edeff2',
+    blue:'#2f66f5', green:'#12a150', red:'#d64f3a',
+    dark:'#0b0c0e', darkCard:'rgba(255,255,255,.055)', darkLine:'rgba(255,255,255,.12)', darkSub:'rgba(255,255,255,.55)',
+    nav:'#17191d', tintBlue:'#eef3ff', tintRed:'#fdeeeb',
+  }; }
+  catColor(C,cat){ return cat==='Fixed'?'#5b6b8c':cat==='Variable'?'#c98a2b':cat==='Savings'?C.green:cat==='Income'?C.blue:C.sub; }
+
+  renderVals(){
+    const C=this.C();
+    const dark=this.state.route==='signin'||this.state.route==='home';
+    return { clock:this.state.clock||'9:41', toast:this.state.toast, barColor:dark?'#ffffff':'#0e1113', screen:this.renderScreen(C) };
+  }
+
+  // ---------- shared bits ----------
+  statusPill(C,text,tone){
+    const m={green:[C.green,'rgba(18,161,80,.12)'],gray:[C.sub,'rgba(134,139,146,.14)'],blue:[C.blue,'rgba(47,102,245,.12)']};
+    const [col,bg]=m[tone]||m.gray;
+    return React.createElement('span',{style:{fontSize:12,fontWeight:700,color:col,background:bg,borderRadius:999,padding:'5px 11px'}},text);
+  }
+  bottomNav(C){
+    const tabs=[{k:'home',label:'Home',icon:'home'},{k:'items',label:'Items',icon:'items'},{k:'goals',label:'Goals',icon:'goals'},{k:'history',label:'History',icon:'history'},{k:'settings',label:'Settings',icon:'settings'}];
+    const map={home:'home',items:'items',itemForm:'items',goals:'goals',goalDetail:'goals',goalForm:'goals',history:'history',pastCycle:'history',settings:'settings',newcycle:'home'};
+    const active=map[this.state.route];
+    return React.createElement('div',{style:{position:'absolute',bottom:20,left:16,right:16,height:62,background:C.nav,borderRadius:999,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 10px',zIndex:30,boxShadow:'0 16px 34px -10px rgba(10,12,14,.5)'}},
+      tabs.map(t=>{
+        const on=active===t.k;
+        return React.createElement('button',{key:t.k,onClick:()=>this.go(t.k),style:{display:'flex',alignItems:'center',gap:8,background:on?'#fff':'transparent',borderRadius:999,border:'none',cursor:'pointer',padding:on?'10px 15px':'10px'}},
+          this.ic(t.icon,21,on?C.ink:'rgba(255,255,255,.55)',on?2.1:1.9),
+          on&&React.createElement('span',{style:{fontSize:13.5,fontWeight:700,color:C.ink}},t.label)
+        );
+      })
+    );
+  }
+  scrollWhite(C,header,body){
+    return React.createElement('div',{style:{height:'100%',background:C.sheet,position:'relative'}},
+      React.createElement('div',{style:{height:'100%',overflowY:'auto',paddingBottom:110}},header,body),
+      this.bottomNav(C)
+    );
+  }
+  pageHead(C,title,sub,action){
+    return React.createElement('div',{style:{padding:'64px 22px 8px',display:'flex',alignItems:'flex-start',justifyContent:'space-between'}},
+      React.createElement('div',{},
+        React.createElement('h1',{style:{fontSize:28,fontWeight:800,color:C.ink,letterSpacing:'-.02em'}},title),
+        sub&&React.createElement('div',{style:{fontSize:14,fontWeight:500,color:C.sub,marginTop:3}},sub)
+      ),
+      action&&React.createElement('button',{onClick:action.on,style:{display:'flex',alignItems:'center',gap:6,background:C.ink,color:'#fff',border:'none',borderRadius:999,padding:'11px 16px',fontSize:14,fontWeight:700,cursor:'pointer',marginTop:4}},action.label)
+    );
+  }
+  backBar(C,to,label){
+    return React.createElement('div',{style:{padding:'62px 22px 6px'}},
+      React.createElement('button',{onClick:()=>this.go(to),style:{display:'inline-flex',alignItems:'center',gap:6,background:C.soft,border:'none',borderRadius:999,padding:'9px 15px 9px 11px',color:C.ink,fontSize:14,fontWeight:700,cursor:'pointer'}},this.ic('back',17,C.ink),label)
+    );
+  }
+  iconTile(C,cat,size=38){
+    const col=this.catColor(C,cat);
+    const glyph=cat==='Savings'?'goals':cat==='Income'?'up':cat==='Fixed'?'home':'wallet';
+    return React.createElement('div',{style:{width:size,height:size,borderRadius:12,background:col+'1f',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},this.ic(glyph,size*0.5,col,2));
+  }
+
+  renderScreen(C){
+    switch(this.state.route){
+      case 'signin': return this.scSignin(C);
+      case 'home': return this.scHome(C);
+      case 'items': return this.scItems(C);
+      case 'itemForm': return this.scItemForm(C);
+      case 'newcycle': return this.scNewCycle(C);
+      case 'goals': return this.scGoals(C);
+      case 'goalDetail': return this.scGoalDetail(C);
+      case 'goalForm': return this.scGoalForm(C);
+      case 'history': return this.scHistory(C);
+      case 'pastCycle': return this.scPastCycle(C);
+      case 'settings': return this.scSettings(C);
+      default: return null;
+    }
+  }
+
+  // ---------- SIGN IN ----------
+  press(d){
+    if(this.state.passErr) this.setState({passErr:false});
+    let p=this.state.pass;
+    if(d==='del'){ this.setState({pass:p.slice(0,-1)}); return; }
+    if(p.length>=4) return;
+    p=p+d; this.setState({pass:p});
+    if(p.length===4){ setTimeout(()=>{
+      if(p==='2026'){ this.setState({loading:true}); setTimeout(()=>this.setState({route:'home',loading:false,pass:''}),650); }
+      else this.setState({passErr:true,pass:''});
+    },140); }
+  }
+  scSignin(C){
+    const dots=[0,1,2,3].map(i=>React.createElement('div',{key:i,style:{width:13,height:13,borderRadius:'50%',border:`2px solid ${this.state.passErr?C.red:'rgba(255,255,255,.5)'}`,background:i<this.state.pass.length?(this.state.passErr?C.red:'#fff'):'transparent',transition:'background .15s'}}));
+    const keys=['1','2','3','4','5','6','7','8','9','','0','del'];
+    return React.createElement('div',{style:{height:'100%',display:'flex',flexDirection:'column',alignItems:'center',padding:'96px 40px 46px',background:'radial-gradient(120% 70% at 25% 0%, #1b1f25 0%, #0b0c0e 58%)'}},
+      React.createElement('div',{style:{width:66,height:66,borderRadius:18,background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.14)',display:'flex',alignItems:'center',justifyContent:'center'}},this.ic('wallet',30,'#fff',2)),
+      React.createElement('h1',{style:{fontSize:26,fontWeight:800,color:'#fff',marginTop:18,letterSpacing:'-.02em'}},'Ledger'),
+      React.createElement('p',{style:{color:'rgba(255,255,255,.55)',fontSize:14,fontWeight:500,marginTop:6,marginBottom:34}},'Enter your passcode'),
+      React.createElement('div',{style:{display:'flex',gap:18,marginBottom:10,animation:this.state.passErr?'shake .4s':'none'}},dots),
+      React.createElement('div',{style:{height:20,color:C.red,fontSize:13,fontWeight:600,marginBottom:16}},this.state.passErr?'Incorrect passcode — try again':''),
+      React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,70px)',gap:16,marginTop:'auto'}},
+        keys.map((k,i)=>k===''?React.createElement('div',{key:i}):
+          React.createElement('button',{key:i,onClick:()=>this.press(k),style:{width:70,height:70,borderRadius:'50%',border:'1px solid rgba(255,255,255,.13)',background:'rgba(255,255,255,.05)',fontSize:26,fontWeight:600,color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}},k==='del'?this.ic('backspace',24,'#fff'):k)
+        )
+      ),
+      React.createElement('p',{style:{color:'rgba(255,255,255,.35)',fontSize:12,fontWeight:600,marginTop:22}},'hint: 2026')
+    );
+  }
+
+  // ---------- HOME ----------
+  scHome(C){
+    const on=this.state.items.filter(i=>i.on);
+    const income=5200, planned=on.reduce((s,i)=>s+i.amt,0), left=income-planned;
+    const catTotal=cat=>on.filter(i=>i.cat===cat).reduce((s,i)=>s+i.amt,0);
+    const savings=catTotal('Savings');
+    const tabs=['Overview','Fixed','Variable','Savings'];
+    let rows;
+    if(this.state.tab==='Overview'){
+      rows=[['Fixed',catTotal('Fixed')],['Variable',catTotal('Variable')],['Savings',catTotal('Savings')]].map(([cat,v])=>
+        React.createElement('button',{key:cat,onClick:()=>this.go('items'),style:{width:'100%',display:'flex',alignItems:'center',gap:14,padding:'13px 4px',background:'none',border:'none',cursor:'pointer',borderTop:cat!=='Fixed'?`1px solid ${C.line}`:'none'}},
+          this.iconTile(C,cat),
+          React.createElement('span',{style:{flex:1,textAlign:'left',fontSize:15.5,fontWeight:700,color:C.ink}},cat),
+          React.createElement('span',{style:{fontSize:15.5,fontWeight:700,color:C.ink}},this.money(v)),
+          this.ic('chevR',17,C.sub,2)
+        )
+      );
+    } else {
+      const list=on.filter(i=>i.cat===this.state.tab);
+      rows=list.length?list.map((i,idx)=>React.createElement('button',{key:i.id,onClick:()=>this.go('itemForm',{editItem:i.id,form:{name:i.name,cat:i.cat,amt:String(i.amt)}}),style:{width:'100%',display:'flex',alignItems:'center',gap:14,padding:'13px 4px',background:'none',border:'none',cursor:'pointer',borderTop:idx?`1px solid ${C.line}`:'none'}},
+        this.iconTile(C,i.cat),
+        React.createElement('span',{style:{flex:1,textAlign:'left',fontSize:15.5,fontWeight:700,color:C.ink}},i.name),
+        React.createElement('span',{style:{fontSize:15.5,fontWeight:700,color:C.ink}},this.money(i.amt)),
+        this.ic('chevR',17,C.sub,2)
+      )):[React.createElement('div',{key:'e',style:{padding:'20px 4px',color:C.sub,fontSize:14,fontWeight:500}},'No active items in this category.')];
+    }
+    return React.createElement('div',{style:{height:'100%',background:C.dark,position:'relative'}},
+      React.createElement('div',{style:{height:'100%',overflowY:'auto',paddingBottom:110}},
+        // hero
+        React.createElement('div',{style:{background:'radial-gradient(130% 80% at 15% 0%, #1c2027 0%, #0b0c0e 60%)',padding:'62px 22px 26px'}},
+          React.createElement('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}},
+            React.createElement('div',{},
+              React.createElement('div',{style:{fontSize:22,fontWeight:800,color:'#fff',letterSpacing:'-.01em'}},'Morning, Morgan 👋'),
+              React.createElement('div',{style:{fontSize:14,fontWeight:500,color:'rgba(255,255,255,.55)',marginTop:3}},"You're on track this cycle")
+            ),
+            React.createElement('button',{onClick:()=>this.flash('No new alerts.'),style:{width:42,height:42,borderRadius:'50%',background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.12)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.ic('bell',19,'#fff',1.8))
+          ),
+          React.createElement('div',{style:{marginTop:20,background:C.darkCard,border:`1px solid ${C.darkLine}`,borderRadius:22,padding:'20px 20px 18px'}},
+            React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+              React.createElement('span',{style:{fontSize:13.5,fontWeight:600,color:'rgba(255,255,255,.6)'}},'Left to allocate · '+this.state.cycleName),
+              this.statusPill(C,'Open','green')
+            ),
+            React.createElement('div',{style:{fontSize:42,fontWeight:800,color:'#fff',letterSpacing:'-.03em',marginTop:8}},this.money(left)),
+            React.createElement('div',{style:{fontSize:14,fontWeight:700,color:C.green,marginTop:4}},this.money(income)+' income · '+this.money(planned)+' planned'),
+            React.createElement('button',{onClick:()=>this.go('newcycle',{form:{}}),style:{marginTop:16,width:'100%',padding:'12px',background:'rgba(255,255,255,.1)',border:`1px solid ${C.darkLine}`,borderRadius:12,color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer'}},'+ Open new cycle')
+          )
+        ),
+        // sheet
+        React.createElement('div',{style:{background:C.sheet,borderTopLeftRadius:28,borderTopRightRadius:28,marginTop:-14,minHeight:520,padding:'18px 22px 0'}},
+          React.createElement('div',{style:{display:'flex',gap:6,background:C.soft,borderRadius:999,padding:5,marginBottom:18}},
+            tabs.map(t=>React.createElement('button',{key:t,onClick:()=>this.setState({tab:t}),style:{flex:1,padding:'9px 0',borderRadius:999,border:'none',cursor:'pointer',fontSize:13,fontWeight:700,color:this.state.tab===t?C.ink:C.sub,background:this.state.tab===t?'#fff':'transparent',boxShadow:this.state.tab===t?'0 1px 4px rgba(10,12,14,.1)':'none'}},t))
+          ),
+          // insight
+          React.createElement('div',{style:{background:C.tintBlue,borderRadius:18,padding:18,marginBottom:18}},
+            React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:8}},
+              React.createElement('span',{style:{width:7,height:7,borderRadius:'50%',background:C.blue}}),
+              React.createElement('span',{style:{fontSize:12.5,fontWeight:800,color:C.blue,letterSpacing:'.02em'}},'Insight')
+            ),
+            React.createElement('div',{style:{fontSize:17,fontWeight:800,color:C.ink,letterSpacing:'-.01em'}},"You're set to save "+this.money(savings)+' this cycle'),
+            React.createElement('div',{style:{fontSize:14,fontWeight:500,color:C.sub,marginTop:4}},'Spending is down 8% from last month'),
+            React.createElement('button',{onClick:()=>this.go('goals'),style:{marginTop:10,background:'none',border:'none',color:C.blue,fontSize:14,fontWeight:700,cursor:'pointer',padding:0}},'View goals →')
+          ),
+          React.createElement('div',{style:{display:'flex',flexDirection:'column'}},rows),
+          // recent activity
+          React.createElement('div',{style:{marginTop:22,display:'flex',alignItems:'center',justifyContent:'space-between'}},
+            React.createElement('h2',{style:{fontSize:17,fontWeight:800,color:C.ink}},'Recent activity'),
+            React.createElement('button',{onClick:()=>this.go('history'),style:{background:'none',border:'none',color:C.blue,fontSize:14,fontWeight:700,cursor:'pointer'}},'View all')
+          ),
+          React.createElement('div',{style:{marginTop:8}},
+            this.state.activity.map((a,idx)=>React.createElement('div',{key:a.id,style:{display:'flex',alignItems:'center',gap:13,padding:'12px 0',borderTop:idx?`1px solid ${C.line}`:'none'}},
+              this.iconTile(C,a.cat,36),
+              React.createElement('div',{style:{flex:1}},
+                React.createElement('div',{style:{fontSize:15,fontWeight:700,color:C.ink}},a.name),
+                React.createElement('div',{style:{fontSize:13,fontWeight:500,color:C.sub}},a.when)
+              ),
+              React.createElement('span',{style:{fontSize:15,fontWeight:700,color:a.amt>0?C.green:C.ink}},(a.amt>0?'+':'')+this.money(a.amt))
+            ))
+          )
+        )
+      ),
+      this.bottomNav(C)
+    );
+  }
+
+  // ---------- ITEMS ----------
+  toggle(id){ this.setState(s=>({items:s.items.map(i=>i.id===id?{...i,on:!i.on}:i)})); }
+  scItems(C){
+    const cats=['Fixed','Variable','Savings'];
+    const groups=cats.map(cat=>({cat,rows:this.state.items.filter(i=>i.cat===cat)})).filter(g=>g.rows.length);
+    const empty=this.state.items.length===0;
+    return this.scrollWhite(C,
+      this.pageHead(C,'Line items',this.state.cycleName,{label:'+ Add',on:()=>this.go('itemForm',{editItem:null,form:{name:'',cat:'Fixed',amt:''}})}),
+      empty?React.createElement('div',{style:{padding:'70px 40px',textAlign:'center'}},
+        React.createElement('div',{style:{display:'flex',justifyContent:'center',marginBottom:14,opacity:.35}},this.ic('inbox',46,C.sub,1.6)),
+        React.createElement('p',{style:{color:C.sub,fontSize:15,fontWeight:500}},'No line items yet. Add your first expense to start the ledger.')
+      ):React.createElement('div',{style:{padding:'12px 22px 0'}},
+        groups.map(g=>React.createElement('div',{key:g.cat,style:{marginTop:18}},
+          React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:10,padding:'0 4px'}},
+            React.createElement('h2',{style:{fontSize:13,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase',color:C.sub}},g.cat),
+            React.createElement('span',{style:{fontSize:14,fontWeight:700,color:C.ink}},this.money(g.rows.filter(r=>r.on).reduce((s,r)=>s+r.amt,0)))
+          ),
+          React.createElement('div',{style:{background:C.soft,borderRadius:18,padding:'4px 14px'}},
+            g.rows.map((i,idx)=>React.createElement('div',{key:i.id,style:{display:'flex',alignItems:'center',gap:12,padding:'12px 0',borderTop:idx?`1px solid ${C.line}`:'none',opacity:i.on?1:.5}},
+              React.createElement('button',{onClick:()=>this.toggle(i.id),style:{width:44,height:26,borderRadius:13,border:'none',cursor:'pointer',background:i.on?C.green:'#d3d6db',position:'relative',flexShrink:0,transition:'background .2s'}},
+                React.createElement('span',{style:{position:'absolute',top:2.5,left:i.on?20.5:2.5,width:21,height:21,borderRadius:'50%',background:'#fff',boxShadow:'0 1px 3px rgba(0,0,0,.25)',transition:'left .2s'}})
+              ),
+              React.createElement('button',{onClick:()=>this.go('itemForm',{editItem:i.id,form:{name:i.name,cat:i.cat,amt:String(i.amt)}}),style:{flex:1,textAlign:'left',background:'none',border:'none',cursor:'pointer',fontSize:15.5,fontWeight:700,color:C.ink,textDecoration:i.on?'none':'line-through'}},i.name),
+              React.createElement('span',{style:{fontSize:15.5,fontWeight:700,color:C.ink}},this.money(i.amt))
+            ))
+          )
+        ))
+      )
+    );
+  }
+
+  // ---------- ITEM FORM ----------
+  saveItem(){
+    const f=this.state.form;
+    if(!f.name||!f.amt){ this.flash('Name and amount are required.'); return; }
+    const amt=Number(f.amt)||0;
+    if(this.state.editItem){ this.setState(s=>({items:s.items.map(i=>i.id===s.editItem?{...i,name:f.name,cat:f.cat,amt}:i)})); this.flash('Line item updated.'); }
+    else { this.setState(s=>({items:[...s.items,{id:Date.now(),name:f.name,cat:f.cat,amt,on:true}]})); this.flash('Line item added.'); }
+    this.go('items');
+  }
+  delItem(){ this.setState(s=>({items:s.items.filter(i=>i.id!==s.editItem)})); this.flash('Line item deleted.'); this.go('items'); }
+  fieldWrap(C,label,node){ return React.createElement('div',{key:label,style:{marginBottom:18}},React.createElement('label',{style:{display:'block',fontSize:13,fontWeight:700,color:C.sub,marginBottom:8}},label),node); }
+  inpStyle(C){ return {width:'100%',padding:'15px 16px',border:`1.5px solid ${C.line}`,borderRadius:14,background:C.soft,fontSize:16,fontWeight:600,fontFamily:"'Plus Jakarta Sans'",color:C.ink,outline:'none'}; }
+  scItemForm(C){
+    const f=this.state.form; const editing=!!this.state.editItem;
+    return React.createElement('div',{style:{height:'100%',background:C.sheet,display:'flex',flexDirection:'column'}},
+      this.backBar(C,'items','Line items'),
+      React.createElement('div',{style:{flex:1,overflowY:'auto',padding:'10px 22px 24px'}},
+        React.createElement('h1',{style:{fontSize:26,fontWeight:800,color:C.ink,marginBottom:22,letterSpacing:'-.02em'}},editing?'Edit item':'New item'),
+        this.fieldWrap(C,'Name',React.createElement('input',{value:f.name||'',onChange:e=>this.setForm('name',e.target.value),placeholder:'e.g. Rent',style:this.inpStyle(C)})),
+        this.fieldWrap(C,'Category',React.createElement('div',{style:{display:'flex',gap:8}},
+          ['Fixed','Variable','Savings'].map(c=>React.createElement('button',{key:c,onClick:()=>this.setForm('cat',c),style:{flex:1,padding:'12px 0',borderRadius:12,border:`1.5px solid ${f.cat===c?C.ink:C.line}`,background:f.cat===c?C.ink:C.soft,color:f.cat===c?'#fff':C.ink,fontSize:13.5,fontWeight:700,cursor:'pointer'}},c))
+        )),
+        this.fieldWrap(C,'Amount',React.createElement('input',{value:f.amt||'',onChange:e=>this.setForm('amt',e.target.value.replace(/[^0-9.]/g,'')),inputMode:'decimal',placeholder:'0',style:this.inpStyle(C)})),
+        React.createElement('button',{onClick:()=>this.saveItem(),style:{width:'100%',padding:'16px',background:C.ink,color:'#fff',border:'none',borderRadius:14,fontSize:16,fontWeight:700,cursor:'pointer',marginTop:6}},editing?'Save changes':'Add item'),
+        editing&&React.createElement('button',{onClick:()=>this.delItem(),style:{width:'100%',padding:'14px',background:'none',color:C.red,border:'none',fontSize:14,fontWeight:700,cursor:'pointer',marginTop:6}},'Delete item')
+      )
+    );
+  }
+
+  // ---------- NEW CYCLE ----------
+  startCycle(){
+    this.setState({stamp:true,loading:true});
+    setTimeout(()=>{
+      const name=this.state.form.cycleName||'New cycle';
+      this.setState(s=>({cycleName:name,history:[{id:Date.now(),name,income:5200,spent:0,saved:0,closed:false},...s.history.map(h=>({...h,closed:true}))],stamp:false,loading:false}));
+      this.go('home'); this.flash('New cycle opened.');
+    },1500);
+  }
+  scNewCycle(C){
+    const f=this.state.form;
+    return React.createElement('div',{style:{height:'100%',background:C.sheet,display:'flex',flexDirection:'column',position:'relative'}},
+      this.backBar(C,'home','Cancel'),
+      React.createElement('div',{style:{flex:1,overflowY:'auto',padding:'10px 22px 24px'}},
+        React.createElement('h1',{style:{fontSize:26,fontWeight:800,color:C.ink,marginBottom:6,letterSpacing:'-.02em'}},'Open a new cycle'),
+        React.createElement('p',{style:{color:C.sub,fontSize:14.5,fontWeight:500,marginBottom:22,lineHeight:1.5}},'Your current cycle will be closed and moved to history. Active line items carry over.'),
+        this.fieldWrap(C,'Cycle name',React.createElement('input',{value:f.cycleName||'',onChange:e=>this.setForm('cycleName',e.target.value),placeholder:'September 2026',style:this.inpStyle(C)})),
+        React.createElement('div',{style:{background:C.soft,borderRadius:18,padding:'16px 18px',marginBottom:22}},
+          React.createElement('div',{style:{fontSize:12.5,fontWeight:800,letterSpacing:'.03em',textTransform:'uppercase',color:C.sub,marginBottom:10}},'Carrying over'),
+          this.state.items.filter(i=>i.on).slice(0,3).map(i=>React.createElement('div',{key:i.id,style:{display:'flex',justifyContent:'space-between',fontSize:14.5,fontWeight:600,color:C.ink,padding:'5px 0'}},React.createElement('span',{},i.name),React.createElement('span',{},this.money(i.amt)))),
+          React.createElement('div',{style:{fontSize:13.5,fontWeight:600,color:C.sub,marginTop:6}},'+ '+(this.state.items.filter(i=>i.on).length-3)+' more items')
+        ),
+        React.createElement('button',{onClick:()=>this.startCycle(),disabled:this.state.loading,style:{width:'100%',padding:'16px',background:C.ink,color:'#fff',border:'none',borderRadius:14,fontSize:16,fontWeight:700,cursor:'pointer'}},this.state.loading?'Opening…':'Open cycle')
+      ),
+      this.state.stamp&&React.createElement('div',{style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,.85)',backdropFilter:'blur(3px)'}},
+        React.createElement('div',{style:{width:96,height:96,borderRadius:'50%',background:C.green,display:'flex',alignItems:'center',justifyContent:'center',animation:'popIn .5s cubic-bezier(.2,1.4,.4,1) forwards',boxShadow:'0 12px 30px -6px rgba(18,161,80,.5)'}},
+          React.createElement('svg',{width:46,height:46,viewBox:'0 0 24 24',fill:'none',stroke:'#fff',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round'},React.createElement('path',{d:'M5 13l4 4L19 7',style:{strokeDasharray:24,strokeDashoffset:24,animation:'drawCheck .4s .25s ease forwards'}}))
+        ),
+        React.createElement('div',{style:{marginTop:18,fontSize:19,fontWeight:800,color:C.ink}},'Cycle opened')
+      )
+    );
+  }
+
+  // ---------- GOALS ----------
+  scGoals(C){
+    return this.scrollWhite(C,
+      this.pageHead(C,'Goals','Saving toward',{label:'+ Add',on:()=>this.go('goalForm',{editGoal:null,form:{name:'',target:'',saved:'',note:''}})}),
+      React.createElement('div',{style:{padding:'14px 22px 0',display:'flex',flexDirection:'column',gap:13}},
+        this.state.goals.map(g=>{
+          const pct=Math.min(100,Math.round(g.saved/g.target*100)); const done=g.saved>=g.target;
+          return React.createElement('button',{key:g.id,onClick:()=>this.go('goalDetail',{activeGoal:g.id}),style:{textAlign:'left',background:C.soft,border:'none',borderRadius:20,padding:18,cursor:'pointer'}},
+            React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}},
+              React.createElement('div',{},
+                React.createElement('div',{style:{fontSize:17,fontWeight:800,color:C.ink,letterSpacing:'-.01em'}},g.name),
+                React.createElement('div',{style:{fontSize:14,fontWeight:600,color:C.sub,marginTop:3}},this.money(g.saved)+' of '+this.money(g.target))
+              ),
+              done?this.statusPill(C,'Funded','green'):React.createElement('span',{style:{fontSize:20,fontWeight:800,color:C.blue}},pct+'%')
+            ),
+            React.createElement('div',{style:{height:9,borderRadius:5,background:'#e2e5ea',overflow:'hidden'}},
+              React.createElement('div',{style:{width:pct+'%',height:'100%',background:done?C.green:C.blue,borderRadius:5}})
+            )
+          );
+        })
+      )
+    );
+  }
+  scGoalDetail(C){
+    const g=this.state.goals.find(x=>x.id===this.state.activeGoal); if(!g) return null;
+    const pct=Math.min(100,Math.round(g.saved/g.target*100)); const done=g.saved>=g.target;
+    const R=54,circ=2*Math.PI*R;
+    return React.createElement('div',{style:{height:'100%',background:C.sheet,display:'flex',flexDirection:'column'}},
+      this.backBar(C,'goals','Goals'),
+      React.createElement('div',{style:{flex:1,overflowY:'auto',padding:'10px 22px 24px'}},
+        React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}},
+          React.createElement('h1',{style:{fontSize:28,fontWeight:800,color:C.ink,maxWidth:230,letterSpacing:'-.02em'}},g.name),
+          React.createElement('button',{onClick:()=>this.go('goalForm',{editGoal:g.id,form:{name:g.name,target:String(g.target),saved:String(g.saved),note:g.note||''}}),style:{background:C.soft,border:'none',borderRadius:999,padding:'9px 16px',color:C.ink,fontSize:14,fontWeight:700,cursor:'pointer',marginTop:6}},'Edit')
+        ),
+        React.createElement('div',{style:{position:'relative',display:'flex',justifyContent:'center',margin:'22px 0'}},
+          React.createElement('svg',{width:156,height:156,style:{transform:'rotate(-90deg)'}},
+            React.createElement('circle',{cx:78,cy:78,r:R,fill:'none',stroke:'#e2e5ea',strokeWidth:13}),
+            React.createElement('circle',{cx:78,cy:78,r:R,fill:'none',stroke:done?C.green:C.blue,strokeWidth:13,strokeLinecap:'round',strokeDasharray:circ,strokeDashoffset:circ*(1-pct/100),style:{transition:'stroke-dashoffset .6s'}})
+          ),
+          React.createElement('div',{style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}},
+            React.createElement('div',{style:{fontSize:34,fontWeight:800,color:C.ink,letterSpacing:'-.02em'}},pct+'%'),
+            React.createElement('div',{style:{fontSize:12,fontWeight:700,color:done?C.green:C.sub,textTransform:'uppercase',letterSpacing:'.06em'}},done?'Funded':'saved')
+          )
+        ),
+        React.createElement('div',{style:{display:'flex',gap:10,marginBottom:18}},
+          [['Saved',g.saved,C.green],['Target',g.target,C.ink],['Left',Math.max(0,g.target-g.saved),C.blue]].map(([l,v,col])=>
+            React.createElement('div',{key:l,style:{flex:1,background:C.soft,borderRadius:14,padding:'13px 14px'}},
+              React.createElement('div',{style:{fontSize:12,fontWeight:700,color:C.sub,marginBottom:4}},l),
+              React.createElement('div',{style:{fontSize:16,fontWeight:800,color:col,letterSpacing:'-.01em'}},this.money(v))
+            )
+          )
+        ),
+        g.note&&React.createElement('div',{style:{background:C.tintBlue,borderRadius:16,padding:16,fontSize:15,fontWeight:600,color:C.ink,lineHeight:1.5}},g.note)
+      )
+    );
+  }
+  saveGoal(){
+    const f=this.state.form;
+    if(!f.name||!f.target){ this.flash('Name and target are required.'); return; }
+    const target=Number(f.target)||0, saved=Number(f.saved)||0;
+    if(this.state.editGoal){ this.setState(s=>({goals:s.goals.map(g=>g.id===s.editGoal?{...g,name:f.name,target,saved,note:f.note}:g)})); this.flash('Goal updated.'); }
+    else { this.setState(s=>({goals:[...s.goals,{id:Date.now(),name:f.name,target,saved,note:f.note}]})); this.flash('Goal added.'); }
+    this.go('goals');
+  }
+  delGoal(){ this.setState(s=>({goals:s.goals.filter(g=>g.id!==s.editGoal)})); this.flash('Goal deleted.'); this.go('goals'); }
+  scGoalForm(C){
+    const f=this.state.form; const editing=!!this.state.editGoal;
+    return React.createElement('div',{style:{height:'100%',background:C.sheet,display:'flex',flexDirection:'column'}},
+      this.backBar(C,'goals','Goals'),
+      React.createElement('div',{style:{flex:1,overflowY:'auto',padding:'10px 22px 24px'}},
+        React.createElement('h1',{style:{fontSize:26,fontWeight:800,color:C.ink,marginBottom:22,letterSpacing:'-.02em'}},editing?'Edit goal':'New goal'),
+        this.fieldWrap(C,'Name',React.createElement('input',{value:f.name||'',onChange:e=>this.setForm('name',e.target.value),placeholder:'e.g. Kyoto trip',style:this.inpStyle(C)})),
+        React.createElement('div',{style:{display:'flex',gap:12}},
+          React.createElement('div',{style:{flex:1}},this.fieldWrap(C,'Target',React.createElement('input',{value:f.target||'',onChange:e=>this.setForm('target',e.target.value.replace(/[^0-9.]/g,'')),inputMode:'decimal',placeholder:'0',style:this.inpStyle(C)}))),
+          React.createElement('div',{style:{flex:1}},this.fieldWrap(C,'Saved',React.createElement('input',{value:f.saved||'',onChange:e=>this.setForm('saved',e.target.value.replace(/[^0-9.]/g,'')),inputMode:'decimal',placeholder:'0',style:this.inpStyle(C)})))
+        ),
+        this.fieldWrap(C,'Note',React.createElement('textarea',{value:f.note||'',onChange:e=>this.setForm('note',e.target.value),rows:3,placeholder:'Optional',style:{...this.inpStyle(C),resize:'none'}})),
+        React.createElement('button',{onClick:()=>this.saveGoal(),style:{width:'100%',padding:'16px',background:C.ink,color:'#fff',border:'none',borderRadius:14,fontSize:16,fontWeight:700,cursor:'pointer',marginTop:4}},editing?'Save changes':'Add goal'),
+        editing&&React.createElement('button',{onClick:()=>this.delGoal(),style:{width:'100%',padding:'14px',background:'none',color:C.red,border:'none',fontSize:14,fontWeight:700,cursor:'pointer',marginTop:6}},'Delete goal')
+      )
+    );
+  }
+
+  // ---------- HISTORY ----------
+  scHistory(C){
+    return this.scrollWhite(C,
+      this.pageHead(C,'History','Past cycles'),
+      React.createElement('div',{style:{padding:'14px 22px 0',display:'flex',flexDirection:'column',gap:12}},
+        this.state.history.map(h=>React.createElement('button',{key:h.id,onClick:()=>this.go('pastCycle',{viewCycle:h.id}),style:{textAlign:'left',background:C.soft,border:'none',borderRadius:20,padding:18,cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+          React.createElement('div',{},
+            React.createElement('div',{style:{fontSize:17,fontWeight:800,color:C.ink,letterSpacing:'-.01em'}},h.name),
+            React.createElement('div',{style:{fontSize:14,fontWeight:600,color:C.sub,marginTop:4}},'Spent '+this.money(h.spent)+' · Saved '+this.money(h.saved))
+          ),
+          h.closed?this.statusPill(C,'Closed','gray'):this.statusPill(C,'Open','green')
+        ))
+      )
+    );
+  }
+  scPastCycle(C){
+    const h=this.state.history.find(x=>x.id===this.state.viewCycle); if(!h) return null;
+    const net=h.income-h.spent;
+    return React.createElement('div',{style:{height:'100%',background:C.sheet,display:'flex',flexDirection:'column'}},
+      this.backBar(C,'history','History'),
+      React.createElement('div',{style:{flex:1,overflowY:'auto',padding:'10px 22px 24px'}},
+        React.createElement('div',{style:{display:'flex',alignItems:'center',gap:12,marginBottom:5}},
+          React.createElement('h1',{style:{fontSize:28,fontWeight:800,color:C.ink,letterSpacing:'-.02em'}},h.name),
+          h.closed&&this.statusPill(C,'Closed','gray')
+        ),
+        React.createElement('p',{style:{color:C.sub,fontSize:13.5,fontWeight:600,marginBottom:20}},'Read-only'),
+        React.createElement('div',{style:{background:C.soft,borderRadius:20,overflow:'hidden'}},
+          [['Income',h.income,C.ink],['Spent',h.spent,C.red],['Saved',h.saved,C.green],['Net',net,net>=0?C.green:C.red]].map(([l,v,col],idx)=>
+            React.createElement('div',{key:l,style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'17px 18px',borderTop:idx?`1px solid ${C.line}`:'none'}},
+              React.createElement('span',{style:{fontSize:15,fontWeight:600,color:C.sub}},l),
+              React.createElement('span',{style:{fontSize:18,fontWeight:800,color:col,letterSpacing:'-.01em'}},this.money(v))
+            )
+          )
+        )
+      )
+    );
+  }
+
+  // ---------- SETTINGS ----------
+  scSettings(C){
+    const row=(label,val,onClick,last)=>React.createElement('button',{key:label,onClick,style:{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 18px',background:'none',border:'none',borderTop:label!=='__first'?`1px solid ${C.line}`:'none',cursor:onClick?'pointer':'default',fontSize:15,fontWeight:600,color:C.ink}},
+      React.createElement('span',{},label),
+      React.createElement('span',{style:{color:C.sub,fontSize:14.5,fontWeight:600,display:'flex',alignItems:'center',gap:8}},val,onClick&&this.ic('chevR',16,C.sub,2)));
+    return this.scrollWhite(C,
+      this.pageHead(C,'Settings','Account'),
+      React.createElement('div',{style:{padding:'14px 22px 0'}},
+        React.createElement('div',{style:{display:'flex',alignItems:'center',gap:14,background:C.soft,borderRadius:20,padding:16,marginBottom:16}},
+          React.createElement('div',{style:{width:52,height:52,borderRadius:16,background:C.ink,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,fontWeight:800}},'M'),
+          React.createElement('div',{},
+            React.createElement('div',{style:{fontSize:17,fontWeight:800,color:C.ink}},'Morgan Ledger'),
+            React.createElement('div',{style:{fontSize:14,fontWeight:500,color:C.sub}},'morgan@ledger.app')
+          )
+        ),
+        React.createElement('div',{style:{background:C.soft,borderRadius:20,overflow:'hidden',marginBottom:16}},
+          (()=>{const r1=row('Currency','USD $',()=>this.flash('Currency picker')); return React.cloneElement(r1,{style:{...r1.props.style,borderTop:'none'}});})(),
+          row('Monthly income',this.money(5200),()=>this.flash('Edit income')),
+          row('Cycle starts on','1st',()=>this.flash('Cycle start')),
+          React.createElement('div',{key:'faceid',style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 18px',borderTop:`1px solid ${C.line}`}},
+            React.createElement('span',{style:{fontSize:15,fontWeight:600,color:C.ink}},'Face ID unlock'),
+            React.createElement('div',{style:{width:44,height:26,borderRadius:13,background:C.green,position:'relative'}},React.createElement('span',{style:{position:'absolute',top:2.5,left:20.5,width:21,height:21,borderRadius:'50%',background:'#fff',boxShadow:'0 1px 3px rgba(0,0,0,.25)'}}))
+          )
+        ),
+        React.createElement('div',{style:{background:C.soft,borderRadius:20,overflow:'hidden'}},
+          (()=>{const r=row('Export ledger','CSV',()=>this.flash('Exporting…')); return React.cloneElement(r,{style:{...r.props.style,borderTop:'none'}});})(),
+          row('Help & support','',()=>this.flash('Opening support'))
+        ),
+        React.createElement('button',{onClick:()=>this.go('signin',{pass:'',passErr:false}),style:{width:'100%',padding:'16px',marginTop:16,background:C.tintRed,color:C.red,border:'none',borderRadius:14,fontSize:15,fontWeight:700,cursor:'pointer'}},'Sign out')
+      )
+    );
+  }
+}
+</script>
+</body>
+</html>
