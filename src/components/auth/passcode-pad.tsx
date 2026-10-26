@@ -28,7 +28,9 @@ export function PasscodePad({ subtitle, onComplete, initialError, footer }: Prop
   const [error, setError] = useState(initialError ?? "");
   const [shakeKey, setShakeKey] = useState(initialError ? 1 : 0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
-  const [now, setNow] = useState(() => Date.now());
+  // Only read while locked out; set when a lockout starts. Reading the clock
+  // during render would block prerendering under Cache Components.
+  const [now, setNow] = useState(0);
   const [pending, startTransition] = useTransition();
 
   const locked = lockedUntil !== null && lockedUntil > now;

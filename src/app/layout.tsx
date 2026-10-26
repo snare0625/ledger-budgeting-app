@@ -20,9 +20,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
-      {/* Mobile: full screen. Wider screens: a 390×844 phone column, as in the design. */}
+      {/* Mobile: full screen. Wider screens: a 390×844 phone column, as in the design.
+          sm:transform-gpu makes the column the containing block for `fixed` chrome
+          (bottom nav, toast), so it pins to the phone frame rather than the window. */}
       <body className="min-h-dvh bg-frame sm:flex sm:items-center sm:justify-center sm:p-8">
-        <div className="relative mx-auto flex min-h-dvh w-full max-w-[390px] flex-col overflow-hidden bg-sheet sm:h-[844px] sm:min-h-0 sm:rounded-[52px] sm:shadow-device">
+        <div className="relative mx-auto flex min-h-dvh w-full max-w-[390px] flex-col overflow-hidden bg-sheet sm:h-[844px] sm:min-h-0 sm:transform-gpu sm:rounded-[52px] sm:shadow-device">
           {children}
         </div>
       </body>

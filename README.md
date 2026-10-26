@@ -22,6 +22,8 @@ npm run dev
 
 **Demo account** (local seed): `demo@ledger.app` / `ledger-demo`, passcode `2026`.
 
+**Windows:** if `db:start` fails with "ports are not available … 54321", Hyper-V/WinNAT has reserved that port (check with `netsh interface ipv4 show excludedportrange protocol=tcp`). Either restart the WinNAT service (`net stop winnat && net start winnat` in an admin shell), or change `[api] port` in `supabase/config.toml` and use the new port in `NEXT_PUBLIC_SUPABASE_URL`.
+
 To use a hosted Supabase project instead, run `npx supabase link --project-ref <ref>` and `npx supabase db push`, then put the project URL and publishable key in `.env.local`. For sign-up confirmation emails, set the "Confirm signup" email template's link to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` so links work on any device, and add your site URL to the Auth redirect allow-list.
 
 ## Scripts
@@ -38,13 +40,22 @@ To use a hosted Supabase project instead, run `npx supabase link --project-ref <
 
 ```
 design/                     design handoff (reference only)
-supabase/migrations/        schema: tables, RLS, view, RPCs, passcode lock
+supabase/migrations/        schema: tables, RLS, view, RPCs, passcode lock, currency
 supabase/seed.sql           local demo user + prototype data
 src/app/(auth)/             login, unlock, passcode setup (shared dark shell)
+src/app/(app)/              the signed-in app (toast provider, scroll container, error boundary)
+src/app/(app)/(tabs)/       Home, Items, Goals, History, Settings (share the bottom nav)
+src/app/(app)/…             sub-screens: item/goal forms, goal detail, past cycle, new cycle,
+                            log activity, currency, income (back pill, no nav)
 src/app/auth/confirm/       email-link landing route
+src/app/export/             CSV export (Route Handler)
 src/app/globals.css         Tailwind theme: Ledger tokens + shadcn variable mapping
+src/components/app/         shared screen chrome, form controls, nav, toast, progress
 src/components/auth/        passcode keypad
 src/lib/auth/               unlock cookie, session helpers, auth Server Actions
+src/lib/data/               queries (Server Components) and Server Actions (mutations)
+src/lib/budget.ts           derived values: planned, left, goal progress, spending change
+src/lib/format.ts           money / date formatting, supported currencies
 src/lib/supabase/           browser/server clients, proxy session logic, DB types
 src/proxy.ts                Next.js proxy (formerly middleware): session refresh + route gating
 ```
@@ -81,6 +92,23 @@ session, no passcode yet ► /passcode/setup ── create + confirm ┘
 - **`open_new_cycle(name, income?)`** RPC closes the current cycle, opens a new one and carries over the enabled items, all in one transaction.
 
 Everything else is derived in the app: `left = income − planned`, goal `pct`, cycle `net = income − spent`.
+
+## How the app reads and writes data
+
+- **Reads** live in `src/lib/data/queries.ts`: server-only functions that use the signed-in user's Supabase client, so RLS scopes every row. Pages keep their static chrome (headers, back pills, nav) outside a `<Suspense>` boundary and stream the user's data in behind it, which is what Cache Components requires for request-time data.
+- **Writes** are Server Actions in `src/lib/data/actions.ts`. Each re-checks the session and the passcode lock (actions are reachable by direct POST), validates with zod, and either returns an error (shown as a toast) or redirects.
+- **Toasts after a redirect** use a short-lived `ledger_flash` cookie holding a message code; the client toaster shows it on the next route and clears it.
+- **Line item toggles** are optimistic (`useOptimistic`) and roll back if the write fails.
+
+## Beyond the prototype
+
+A few things the design mocks up are real features here, and a few needed adding:
+
+- **Log activity** (Home → "+ Log"): records income, spending or savings in the open cycle. Without it, spent/saved would stay at zero.
+- **Settings:** Currency (USD, ZAR, EUR, GBP; display only, amounts aren't converted), Monthly income (edits the open cycle), Export ledger (CSV of every cycle, item and transaction), and Lock now. The prototype's "Cycle starts on" and "Face ID unlock" rows are left out: cycles are opened by hand, and the web has no Face ID.
+- **New cycle** asks for the income too, since a first cycle has none to carry over.
+- **Home's bell** is a lock button, and the insight compares spending with the last closed cycle instead of a fixed "down 8%".
+- **Past cycle** also lists that cycle's activity; Home's "View all" opens the current cycle there.
 
 ## Theme tokens
 

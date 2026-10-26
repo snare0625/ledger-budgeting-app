@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import type { Database } from "./database.types";
 import { supabaseKey, supabaseUrl } from "./env";
 
@@ -8,6 +9,10 @@ import { supabaseKey, supabaseUrl } from "./env";
  * Create a new one per request — never share it across requests.
  */
 export async function createClient() {
+  // Everything read through this client is per user and per request. The auth
+  // client also reads the clock (token expiry), which Cache Components won't
+  // allow while prerendering, so wait for the real request first.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {
