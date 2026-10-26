@@ -75,6 +75,7 @@
   --shadow-pill: 0 1px 4px rgb(10 12 14 / 0.1);
   --shadow-success: 0 12px 30px -6px rgb(18 161 80 / 0.5);
   --shadow-toast: 0 12px 28px rgb(10 12 14 / 0.4);
+  --shadow-device: 0 40px 90px -20px rgb(10 12 14 / 0.55), 0 0 0 2px #2a2c30;
 
   /* Motion */
   --ease-spring: cubic-bezier(0.2, 1.4, 0.4, 1);

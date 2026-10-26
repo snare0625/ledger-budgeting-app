@@ -1,4 +1,4 @@
-// Mirrors supabase/migrations/20261025000000_init_schema.sql in the shape
+// Mirrors supabase/migrations/*.sql in the shape
 // `supabase gen types typescript` emits. Regenerate with `npm run db:types`
 // once the local stack is running; that output replaces this file.
 
@@ -128,6 +128,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      profiles: {
+        Row: {
+          created_at: string;
+          display_name: string;
+          id: string;
+        };
+        Insert: {
+          created_at?: string;
+          display_name: string;
+          id: string;
+        };
+        Update: {
+          created_at?: string;
+          display_name?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
       items: {
         Row: {
           amount: number;
@@ -191,6 +209,12 @@ export type Database = {
       };
     };
     Functions: {
+      has_passcode: { Args: never; Returns: boolean };
+      set_passcode: {
+        Args: { p_current?: string; p_new: string };
+        Returns: undefined;
+      };
+      verify_passcode: { Args: { p_code: string }; Returns: Json };
       open_new_cycle: {
         Args: { p_income?: number; p_name: string };
         Returns: {
