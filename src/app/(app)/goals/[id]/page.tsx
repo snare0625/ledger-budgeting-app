@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { nav, Streamed } from "@/components/app/motion";
 import { Skeleton, SubScreen } from "@/components/app/chrome";
 import { ProgressRing } from "@/components/app/progress";
 import { goalProgress } from "@/lib/budget";
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Goal · Ledger" };
 export default function GoalPage({ params }: PageProps<"/goals/[id]">) {
   return (
     <SubScreen back="/goals" backLabel="Goals">
-      <Suspense
+      <Streamed
         fallback={
           <>
             <Skeleton className="h-9 w-48 rounded-lg" />
@@ -24,7 +24,7 @@ export default function GoalPage({ params }: PageProps<"/goals/[id]">) {
         }
       >
         <Goal params={params} />
-      </Suspense>
+      </Streamed>
     </SubScreen>
   );
 }
@@ -47,7 +47,8 @@ async function Goal({ params }: Pick<PageProps<"/goals/[id]">, "params">) {
         <h1 className="max-w-[230px] text-title break-words text-ink">{goal.name}</h1>
         <Link
           href={`/goals/${goal.id}/edit`}
-          className="mt-1.5 shrink-0 rounded-full bg-soft px-4 py-[9px] text-label font-bold text-ink transition-colors hover:bg-line"
+          transitionTypes={nav.forward}
+          className="mt-1.5 shrink-0 rounded-full bg-soft px-4 py-[9px] text-label font-bold text-ink transition hover:bg-line active:scale-[0.96]"
         >
           Edit
         </Link>

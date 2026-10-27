@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { AmountInput, Field, PrimaryButton, TextInput, useErrorToast } from "@/components/app/form";
+import { nav } from "@/components/app/motion";
 import { openCycle, type FormState } from "@/lib/data/actions";
 
 const STAMP_MS = 1300;
@@ -24,7 +25,7 @@ export function NewCycleForm({
 
   useEffect(() => {
     if (!state.ok) return;
-    const timer = setTimeout(() => router.push("/"), STAMP_MS);
+    const timer = setTimeout(() => router.push("/", { transitionTypes: nav.back }), STAMP_MS);
     return () => clearTimeout(timer);
   }, [state, router]);
 

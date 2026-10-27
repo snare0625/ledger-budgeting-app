@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
+import { Streamed } from "@/components/app/motion";
 import { FormSkeleton, SubScreen } from "@/components/app/chrome";
 import { getOpenCycle } from "@/lib/data/queries";
 import { IncomeForm } from "./income-form";
@@ -11,9 +11,9 @@ export default function IncomePage() {
   return (
     <SubScreen back="/settings" backLabel="Settings">
       <h1 className="mb-1.5 text-title-sm text-ink">Monthly income</h1>
-      <Suspense fallback={<FormSkeleton fields={1} />}>
+      <Streamed fallback={<FormSkeleton fields={1} />}>
         <Income />
-      </Suspense>
+      </Streamed>
     </SubScreen>
   );
 }

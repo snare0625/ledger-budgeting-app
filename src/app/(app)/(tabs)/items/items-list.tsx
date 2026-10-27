@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { startTransition, useOptimistic } from "react";
+import { nav } from "@/components/app/motion";
 import { Switch } from "@/components/app/switch";
 import { useToast } from "@/components/app/toaster";
 import { CATEGORIES, plannedTotal } from "@/lib/budget";
@@ -60,6 +61,7 @@ export function ItemsList({ items, currency }: { items: Item[]; currency: Curren
                   />
                   <Link
                     href={`/items/${item.id}`}
+                    transitionTypes={nav.forward}
                     className={cn(
                       "min-w-0 flex-1 truncate text-row font-bold text-ink hover:text-ink/75",
                       !item.enabled && "line-through",

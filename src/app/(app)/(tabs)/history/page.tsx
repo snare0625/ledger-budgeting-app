@@ -1,7 +1,7 @@
 import { Clock } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { nav, Screen, Streamed } from "@/components/app/motion";
 import { CardsSkeleton, CyclePill, EmptyState, PageHeader } from "@/components/app/chrome";
 import { getCycles, getProfile } from "@/lib/data/queries";
 import { formatMoney } from "@/lib/format";
@@ -10,12 +10,14 @@ export const metadata: Metadata = { title: "History · Ledger" };
 
 export default function HistoryPage() {
   return (
-    <main className="flex-1 bg-sheet pb-nav-clearance">
-      <PageHeader title="History" subtitle="Past cycles" />
-      <Suspense fallback={<CardsSkeleton count={4} height="h-[86px]" />}>
-        <Cycles />
-      </Suspense>
-    </main>
+    <Screen>
+      <main className="flex-1 bg-sheet pb-nav-clearance">
+        <PageHeader title="History" subtitle="Past cycles" />
+        <Streamed fallback={<CardsSkeleton count={4} height="h-[86px]" />}>
+          <Cycles />
+        </Streamed>
+      </main>
+    </Screen>
   );
 }
 
@@ -36,7 +38,8 @@ async function Cycles() {
         <li key={cycle.id}>
           <Link
             href={`/history/${cycle.id}`}
-            className="flex items-center justify-between gap-3 rounded-panel bg-soft p-[18px] transition-colors hover:bg-line/70"
+            transitionTypes={nav.forward}
+            className="flex items-center justify-between gap-3 rounded-panel bg-soft p-[18px] transition hover:bg-line/70 active:scale-[0.985]"
           >
             <div className="min-w-0">
               <h2 className="truncate text-heading text-ink">{cycle.name}</h2>

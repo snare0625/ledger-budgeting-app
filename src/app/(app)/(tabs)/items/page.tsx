@@ -1,7 +1,7 @@
 import { Inbox } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { nav, Screen, Streamed } from "@/components/app/motion";
 import { AddLink, EmptyState, PageHeader, Skeleton } from "@/components/app/chrome";
 import { getItems, getOpenCycle, getProfile } from "@/lib/data/queries";
 import { ItemsList } from "./items-list";
@@ -10,21 +10,23 @@ export const metadata: Metadata = { title: "Line items · Ledger" };
 
 export default function ItemsPage() {
   return (
-    <main className="flex-1 bg-sheet pb-nav-clearance">
-      <Suspense
-        fallback={
-          <>
-            <PageHeader title="Line items" subtitle={" "} />
-            <div className="space-y-[18px] px-gutter pt-[30px]">
-              <Skeleton className="h-[150px]" />
-              <Skeleton className="h-[150px]" />
-            </div>
-          </>
-        }
-      >
-        <Items />
-      </Suspense>
-    </main>
+    <Screen>
+      <main className="flex-1 bg-sheet pb-nav-clearance">
+        <Streamed
+          fallback={
+            <>
+              <PageHeader title="Line items" subtitle={" "} />
+              <div className="space-y-[18px] px-gutter pt-[30px]">
+                <Skeleton className="h-[150px]" />
+                <Skeleton className="h-[150px]" />
+              </div>
+            </>
+          }
+        >
+          <Items />
+        </Streamed>
+      </main>
+    </Screen>
   );
 }
 
@@ -39,7 +41,11 @@ async function Items() {
         <PageHeader title="Line items" />
         <EmptyState icon={inbox}>
           No open cycle yet.{" "}
-          <Link href="/cycles/new" className="font-bold text-blue hover:text-blue-hover">
+          <Link
+            href="/cycles/new"
+            transitionTypes={nav.forward}
+            className="font-bold text-blue hover:text-blue-hover"
+          >
             Open your first cycle
           </Link>{" "}
           to start the ledger.

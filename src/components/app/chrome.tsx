@@ -2,6 +2,7 @@ import { ArrowUpRight, ChevronLeft, House, Target, Wallet } from "lucide-react";
 import Link from "next/link";
 import type { ActivityCategory } from "@/lib/budget";
 import { cn } from "@/lib/utils";
+import { nav, Screen } from "./motion";
 
 // Shared screen chrome from the design: page headers, back pill, status pills,
 // category icon tiles, list cards.
@@ -32,7 +33,8 @@ export function AddLink({ href, label = "Add" }: { href: string; label?: string 
   return (
     <Link
       href={href}
-      className="mt-1 flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 py-[11px] text-label font-bold text-white transition-colors hover:bg-ink/85"
+      transitionTypes={nav.forward}
+      className="mt-1 flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-4 py-[11px] text-label font-bold text-white transition hover:bg-ink/85 active:scale-[0.96]"
     >
       + {label}
     </Link>
@@ -52,18 +54,21 @@ export function SubScreen({
   className?: string;
 }) {
   return (
-    <main className={cn("relative flex flex-1 flex-col bg-sheet", className)}>
-      <div className="px-gutter pt-[62px] pb-1.5">
-        <Link
-          href={back}
-          className="inline-flex items-center gap-1.5 rounded-full bg-soft py-[9px] pr-[15px] pl-[11px] text-label font-bold text-ink transition-colors hover:bg-line"
-        >
-          <ChevronLeft className="size-[17px]" strokeWidth={2} />
-          {backLabel}
-        </Link>
-      </div>
-      <div className="flex flex-1 flex-col px-gutter pt-2.5 pb-6">{children}</div>
-    </main>
+    <Screen>
+      <main className={cn("relative flex flex-1 flex-col bg-sheet", className)}>
+        <div className="px-gutter pt-[62px] pb-1.5">
+          <Link
+            href={back}
+            transitionTypes={nav.back}
+            className="inline-flex items-center gap-1.5 rounded-full bg-soft py-[9px] pr-[15px] pl-[11px] text-label font-bold text-ink transition hover:bg-line active:scale-[0.96]"
+          >
+            <ChevronLeft className="size-[17px]" strokeWidth={2} />
+            {backLabel}
+          </Link>
+        </div>
+        <div className="flex flex-1 flex-col px-gutter pt-2.5 pb-[calc(24px+var(--spacing-safe-bottom))]">{children}</div>
+      </main>
+    </Screen>
   );
 }
 

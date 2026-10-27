@@ -1,7 +1,7 @@
 import { Target } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { nav, Screen, Streamed } from "@/components/app/motion";
 import { AddLink, CardsSkeleton, EmptyState, PageHeader, StatusPill } from "@/components/app/chrome";
 import { ProgressBar } from "@/components/app/progress";
 import { goalProgress } from "@/lib/budget";
@@ -12,12 +12,14 @@ export const metadata: Metadata = { title: "Goals · Ledger" };
 
 export default function GoalsPage() {
   return (
-    <main className="flex-1 bg-sheet pb-nav-clearance">
-      <PageHeader title="Goals" subtitle="Saving toward" action={<AddLink href="/goals/new" />} />
-      <Suspense fallback={<CardsSkeleton />}>
-        <Goals />
-      </Suspense>
-    </main>
+    <Screen>
+      <main className="flex-1 bg-sheet pb-nav-clearance">
+        <PageHeader title="Goals" subtitle="Saving toward" action={<AddLink href="/goals/new" />} />
+        <Streamed fallback={<CardsSkeleton />}>
+          <Goals />
+        </Streamed>
+      </main>
+    </Screen>
   );
 }
 
@@ -40,7 +42,8 @@ async function Goals() {
           <li key={goal.id}>
             <Link
               href={`/goals/${goal.id}`}
-              className="block rounded-panel bg-soft p-[18px] transition-colors hover:bg-line/70"
+              transitionTypes={nav.forward}
+              className="block rounded-panel bg-soft p-[18px] transition hover:bg-line/70 active:scale-[0.985]"
             >
               <div className="mb-3.5 flex items-start justify-between gap-3">
                 <div className="min-w-0">

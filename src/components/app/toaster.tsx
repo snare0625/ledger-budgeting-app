@@ -34,7 +34,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         role="status"
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-6 bottom-[110px] z-60 mx-auto max-w-[342px]"
+        className="pointer-events-none fixed inset-x-6 bottom-nav-clearance z-60 mx-auto max-w-[342px]"
       >
         {toast && (
           <div

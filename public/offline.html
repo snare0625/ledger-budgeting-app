@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0c0e" />
+    <title>Offline · Ledger</title>
+    <!-- Served by public/sw.js when a page can't load. Self-contained: no app CSS, JS or fonts. -->
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 40px calc(40px + env(safe-area-inset-bottom, 0px));
+        background: radial-gradient(120% 70% at 25% 0%, #1b1f25 0%, #0b0c0e 58%) #0b0c0e;
+        color: #fff;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+        -webkit-font-smoothing: antialiased;
+      }
+      .tile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 66px;
+        height: 66px;
+        border-radius: 18px;
+        border: 1px solid rgb(255 255 255 / 0.14);
+        background: rgb(255 255 255 / 0.07);
+      }
+      h1 { margin-top: 18px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+      p { margin-top: 8px; max-width: 280px; font-size: 14px; font-weight: 500; line-height: 1.5; color: rgb(255 255 255 / 0.55); }
+      button {
+        margin-top: 28px;
+        padding: 14px 28px;
+        border: 1px solid rgb(255 255 255 / 0.12);
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.1);
+        color: #fff;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:active { transform: scale(0.97); }
+    </style>
+  </head>
+  <body>
+    <div class="tile" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+        <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+      </svg>
+    </div>
+    <h1>You're offline</h1>
+    <p>Ledger needs a connection to load your budget. Check your signal or Wi-Fi and try again.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+    <script>
+      // Come back on our own as soon as the connection returns.
+      addEventListener("online", () => location.reload());
+    </script>
+  </body>
+</html>

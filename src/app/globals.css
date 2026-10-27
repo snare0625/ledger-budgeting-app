@@ -39,7 +39,9 @@
 
   /* Spacing */
   --spacing-gutter: 22px; /* screen horizontal padding */
-  --spacing-nav-clearance: 110px; /* scroll padding under the floating nav */
+  /* iPhone home indicator etc. (0 on desktop; needs viewport-fit=cover, set in app/layout.tsx) */
+  --spacing-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --spacing-nav-clearance: calc(110px + env(safe-area-inset-bottom, 0px)); /* scroll padding under the floating nav */
 
   /* Radius */
   --radius-tile: 12px; /* icon tiles, segmented buttons */
@@ -83,6 +85,10 @@
   --animate-fade-up: fade-up 0.3s ease;
   --animate-shake: shake 0.4s;
   --animate-draw-check: draw-check 0.4s 0.25s ease forwards;
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-fill-bar: fill-bar 0.8s 0.1s var(--ease-out-quint) both;
+  --animate-fill-ring: fill-ring 0.9s 0.1s var(--ease-out-quint) both;
 
   @keyframes pop-in {
     0% { transform: scale(0.4); opacity: 0; }
@@ -103,6 +109,106 @@
   /* The checkmark path starts hidden with stroke-dasharray/offset of 24 */
   @keyframes draw-check {
     to { stroke-dashoffset: 0; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+  }
+  /* Progress fills grow from empty to their inline value on mount */
+  @keyframes fill-bar {
+    from { width: 0; }
+  }
+  @keyframes fill-ring {
+    from { stroke-dashoffset: var(--ring-empty); }
+  }
+}
+
+/*
+ * Screen transitions — React <ViewTransition> classes set in
+ * src/components/app/motion.tsx. Old content leaves fast, new content arrives
+ * a beat later so the two don't compete.
+ */
+::view-transition {
+  pointer-events: none; /* taps during a transition reach the live page */
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none; /* only the wrapped screens move, not the whole document */
+}
+
+::view-transition-old(.nav-forward),
+::view-transition-old(.nav-back) {
+  animation:
+    140ms ease-in both vt-fade reverse,
+    320ms var(--ease-out-quint) both vt-slide reverse;
+}
+::view-transition-new(.nav-forward),
+::view-transition-new(.nav-back) {
+  animation:
+    200ms ease-out 100ms both vt-fade,
+    320ms var(--ease-out-quint) both vt-slide;
+}
+::view-transition-old(.nav-forward) { --vt-x: -48px; }
+::view-transition-new(.nav-forward) { --vt-x: 48px; }
+::view-transition-old(.nav-back) { --vt-x: 48px; }
+::view-transition-new(.nav-back) { --vt-x: -48px; }
+
+::view-transition-old(.nav-tab) {
+  animation: 120ms ease-in both vt-fade reverse;
+}
+::view-transition-new(.nav-tab) {
+  animation: 180ms ease-out 60ms both vt-fade;
+}
+
+/* Suspense: placeholder fades out, data rises in */
+::view-transition-old(.fallback-out) {
+  animation: 120ms ease-out both vt-fade reverse;
+}
+::view-transition-new(.reveal) {
+  animation:
+    200ms ease-out 80ms both vt-fade,
+    300ms var(--ease-out-quint) both vt-rise;
+}
+
+/* The bottom nav is an anchor: it never moves with the screens */
+::view-transition-group(bottom-nav) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(bottom-nav) {
+  display: none;
+}
+::view-transition-new(bottom-nav) {
+  animation: none;
+}
+
+@keyframes vt-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes vt-slide {
+  from { translate: var(--vt-x) 0; }
+  to { translate: 0 0; }
+}
+@keyframes vt-rise {
+  from { translate: 0 8px; }
+  to { translate: 0 0; }
+}
+
+/* Reduced motion: everything snaps to its end state */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

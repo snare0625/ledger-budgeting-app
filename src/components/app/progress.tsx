@@ -12,7 +12,10 @@ export function ProgressBar({ pct, done, label }: { pct: number; done: boolean; 
       className="h-[9px] overflow-hidden rounded-[5px] bg-track"
     >
       <div
-        className={cn("h-full rounded-[5px] transition-[width] duration-600", done ? "bg-green" : "bg-blue")}
+        className={cn(
+          "h-full animate-fill-bar rounded-[5px] transition-[width] duration-600",
+          done ? "bg-green" : "bg-blue",
+        )}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -46,7 +49,12 @@ export function ProgressRing({ pct, done }: { pct: number; done: boolean }) {
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE * (1 - pct / 100)}
-          className={cn("transition-[stroke-dashoffset] duration-600", done ? "stroke-green" : "stroke-blue")}
+          // fill-ring animates in from an empty ring (offset = full circumference)
+          style={{ "--ring-empty": CIRCUMFERENCE } as React.CSSProperties}
+          className={cn(
+            "animate-fill-ring transition-[stroke-dashoffset] duration-600",
+            done ? "stroke-green" : "stroke-blue",
+          )}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">

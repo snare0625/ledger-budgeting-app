@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Streamed } from "@/components/app/motion";
 import { FormSkeleton, SubScreen } from "@/components/app/chrome";
 import { getOpenItem } from "@/lib/data/queries";
 import { ItemForm } from "../item-form";
@@ -11,9 +11,9 @@ export default function EditItemPage({ params }: PageProps<"/items/[id]">) {
   return (
     <SubScreen back="/items" backLabel="Line items">
       <h1 className="mb-[22px] text-title-sm text-ink">Edit item</h1>
-      <Suspense fallback={<FormSkeleton fields={3} />}>
+      <Streamed fallback={<FormSkeleton fields={3} />}>
         <EditItem params={params} />
-      </Suspense>
+      </Streamed>
     </SubScreen>
   );
 }

@@ -63,7 +63,7 @@ export function SegmentedChoice({
         {options.map((option) => (
           <label
             key={option}
-            className="flex-1 cursor-pointer rounded-tile border-[1.5px] border-line bg-soft py-3 text-center text-tab font-bold text-ink transition-colors has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+            className="flex-1 cursor-pointer rounded-tile border-[1.5px] border-line bg-soft py-3 text-center text-tab font-bold text-ink transition active:scale-[0.96] has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
           >
             <input
               type="radio"
@@ -86,7 +86,7 @@ export function PrimaryButton({ className, ...props }: React.ComponentProps<"but
       type="submit"
       {...props}
       className={cn(
-        "w-full rounded-field bg-ink py-4 text-base font-bold text-white transition-colors hover:bg-ink/85 disabled:opacity-60",
+        "w-full rounded-field bg-ink py-4 text-base font-bold text-white transition hover:bg-ink/85 not-disabled:active:scale-[0.98] disabled:opacity-60",
         className,
       )}
     />

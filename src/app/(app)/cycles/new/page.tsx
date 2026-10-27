@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { Streamed } from "@/components/app/motion";
 import { FormSkeleton, SubScreen } from "@/components/app/chrome";
 import { getItems, getOpenCycle, getProfile, type CycleSummary } from "@/lib/data/queries";
 import { formatMoney, monthName } from "@/lib/format";
@@ -11,9 +11,9 @@ export default function NewCyclePage() {
   return (
     <SubScreen back="/" backLabel="Cancel">
       <h1 className="mb-1.5 text-title-sm text-ink">Open a new cycle</h1>
-      <Suspense fallback={<FormSkeleton fields={2} />}>
+      <Streamed fallback={<FormSkeleton fields={2} />}>
         <NewCycle />
-      </Suspense>
+      </Streamed>
     </SubScreen>
   );
 }

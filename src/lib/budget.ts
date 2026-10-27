@@ -31,12 +31,13 @@ export function goalProgress(saved: number, target: number) {
 
 /** % change in spending vs the previous cycle, or null with nothing to compare. */
 export function spendingChange(spent: number, previousSpent: number | null) {
-  if (previousSpent === null || previousSpent <= 0) return null;
+  // A fresh cycle with nothing logged isn't "down 100%", it just hasn't started.
+  if (spent <= 0 || previousSpent === null || previousSpent <= 0) return null;
   return Math.round(((spent - previousSpent) / previousSpent) * 100);
 }
 
 export function spendingInsight(change: number | null) {
-  if (change === null) return "Log spending to compare cycles";
+  if (change === null) return "Log spending to compare with last cycle";
   if (change === 0) return "Spending is level with last cycle";
   return `Spending is ${change < 0 ? "down" : "up"} ${Math.abs(change)}% from last cycle`;
 }

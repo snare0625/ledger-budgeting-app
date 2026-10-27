@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { Streamed } from "@/components/app/motion";
 import { Skeleton, SubScreen } from "@/components/app/chrome";
 import { updateCurrency } from "@/lib/data/actions";
 import { getProfile } from "@/lib/data/queries";
@@ -16,9 +16,9 @@ export default function CurrencyPage() {
       <p className="mb-[22px] text-[14.5px] leading-normal font-medium text-sub">
         Changes how amounts are shown. Amounts aren&apos;t converted.
       </p>
-      <Suspense fallback={<Skeleton className="h-[228px] rounded-panel" />}>
+      <Streamed fallback={<Skeleton className="h-[228px] rounded-panel" />}>
         <CurrencyPicker />
-      </Suspense>
+      </Streamed>
     </SubScreen>
   );
 }

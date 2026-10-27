@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { nav, Screen, Streamed } from "@/components/app/motion";
 import { PageHeader, Skeleton } from "@/components/app/chrome";
 import { lockApp, signOut } from "@/lib/auth/actions";
 import { getOpenCycle, getProfile } from "@/lib/data/queries";
@@ -13,43 +13,45 @@ const HELP_URL = "https://github.com/snare0625/ledger-budgeting-app/issues";
 
 export default function SettingsPage() {
   return (
-    <main className="flex-1 bg-sheet pb-nav-clearance">
-      <PageHeader title="Settings" subtitle="Account" />
-      <div className="px-gutter pt-3.5">
-        <Suspense
-          fallback={
-            <>
-              <Skeleton className="mb-4 h-[84px] rounded-panel" />
-              <Skeleton className="mb-4 h-[114px] rounded-panel" />
-            </>
-          }
-        >
-          <Account />
-        </Suspense>
+    <Screen>
+      <main className="flex-1 bg-sheet pb-nav-clearance">
+        <PageHeader title="Settings" subtitle="Account" />
+        <div className="px-gutter pt-3.5">
+          <Streamed
+            fallback={
+              <>
+                <Skeleton className="mb-4 h-[84px] rounded-panel" />
+                <Skeleton className="mb-4 h-[114px] rounded-panel" />
+              </>
+            }
+          >
+            <Account />
+          </Streamed>
 
-        <div className="divide-y divide-line overflow-hidden rounded-panel bg-soft">
-          <Row href="/export" label="Export ledger" value="CSV" download />
-          <Row href={HELP_URL} label="Help & support" external />
+          <div className="divide-y divide-line overflow-hidden rounded-panel bg-soft">
+            <Row href="/export" label="Export ledger" value="CSV" download />
+            <Row href={HELP_URL} label="Help & support" external />
+          </div>
+
+          <form action={lockApp} className="mt-4">
+            <button
+              type="submit"
+              className="w-full rounded-field bg-soft py-4 text-body font-bold text-ink transition hover:bg-line active:scale-[0.98]"
+            >
+              Lock now
+            </button>
+          </form>
+          <form action={signOut} className="mt-3">
+            <button
+              type="submit"
+              className="w-full rounded-field bg-tint-red py-4 text-body font-bold text-red transition hover:bg-tint-red/80 active:scale-[0.98]"
+            >
+              Sign out
+            </button>
+          </form>
         </div>
-
-        <form action={lockApp} className="mt-4">
-          <button
-            type="submit"
-            className="w-full rounded-field bg-soft py-4 text-body font-bold text-ink transition-colors hover:bg-line"
-          >
-            Lock now
-          </button>
-        </form>
-        <form action={signOut} className="mt-3">
-          <button
-            type="submit"
-            className="w-full rounded-field bg-tint-red py-4 text-body font-bold text-red transition-colors hover:bg-tint-red/80"
-          >
-            Sign out
-          </button>
-        </form>
-      </div>
-    </main>
+      </main>
+    </Screen>
   );
 }
 
@@ -126,7 +128,7 @@ function Row({
     );
   }
   return (
-    <Link href={href} className={className}>
+    <Link href={href} transitionTypes={nav.forward} className={className}>
       {content}
     </Link>
   );

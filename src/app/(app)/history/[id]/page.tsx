@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Streamed } from "@/components/app/motion";
 import { ActivityList } from "@/components/app/activity-list";
 import { CyclePill, Skeleton, SubScreen } from "@/components/app/chrome";
 import { getActivity, getCycle, getProfile } from "@/lib/data/queries";
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Cycle · Ledger" };
 export default function CyclePage({ params }: PageProps<"/history/[id]">) {
   return (
     <SubScreen back="/history" backLabel="History">
-      <Suspense
+      <Streamed
         fallback={
           <>
             <Skeleton className="h-9 w-52 rounded-lg" />
@@ -22,7 +22,7 @@ export default function CyclePage({ params }: PageProps<"/history/[id]">) {
         }
       >
         <Cycle params={params} />
-      </Suspense>
+      </Streamed>
     </SubScreen>
   );
 }

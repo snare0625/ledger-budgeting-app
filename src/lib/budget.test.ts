@@ -41,13 +41,14 @@ describe("spendingChange", () => {
   it("returns null without a usable baseline", () => {
     expect(spendingChange(100, null)).toBeNull();
     expect(spendingChange(100, 0)).toBeNull();
+    expect(spendingChange(0, 3610)).toBeNull(); // nothing logged yet this cycle
   });
 
   it("phrases the insight", () => {
     expect(spendingInsight(-8)).toBe("Spending is down 8% from last cycle");
     expect(spendingInsight(12)).toBe("Spending is up 12% from last cycle");
     expect(spendingInsight(0)).toBe("Spending is level with last cycle");
-    expect(spendingInsight(null)).toBe("Log spending to compare cycles");
+    expect(spendingInsight(null)).toBe("Log spending to compare with last cycle");
   });
 });
 

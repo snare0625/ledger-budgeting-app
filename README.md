@@ -22,7 +22,7 @@ npm run dev
 
 **Demo account** (local seed): `demo@ledger.app` / `ledger-demo`, passcode `2026`.
 
-**Windows:** if `db:start` fails with "ports are not available … 54321", Hyper-V/WinNAT has reserved that port (check with `netsh interface ipv4 show excludedportrange protocol=tcp`). Either restart the WinNAT service (`net stop winnat && net start winnat` in an admin shell), or change `[api] port` in `supabase/config.toml` and use the new port in `NEXT_PUBLIC_SUPABASE_URL`.
+The local API runs on port **54331**, not Supabase's default 54321: Windows (Hyper-V/WinNAT) often reserves ranges ending at 54321. If `db:start` still reports "ports are not available", check `netsh interface ipv4 show excludedportrange protocol=tcp`, pick a free port for `[api] port` in `supabase/config.toml`, and use it in `NEXT_PUBLIC_SUPABASE_URL`.
 
 To use a hosted Supabase project instead, run `npx supabase link --project-ref <ref>` and `npx supabase db push`, then put the project URL and publishable key in `.env.local`. For sign-up confirmation emails, set the "Confirm signup" email template's link to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` so links work on any device, and add your site URL to the Auth redirect allow-list.
 
@@ -109,6 +109,14 @@ A few things the design mocks up are real features here, and a few needed adding
 - **New cycle** asks for the income too, since a first cycle has none to carry over.
 - **Home's bell** is a lock button, and the insight compares spending with the last closed cycle instead of a fixed "down 8%".
 - **Past cycle** also lists that cycle's activity; Home's "View all" opens the current cycle there.
+
+## Installable app (PWA)
+
+- `src/app/manifest.ts` makes Ledger installable, opening full screen ("standalone") from the home screen. Icons are in `public/icons/` (any + maskable), with `src/app/apple-icon.png` for iOS and `src/app/icon.svg` as the favicon.
+- `public/sw.js` is an offline fallback only. It caches nothing from the app (budget data is personal and always fetched fresh). When a page load fails it serves `public/offline.html`, which reloads itself once the connection returns.
+- The browser/status-bar colour follows the screen (dark on sign-in and Home, white elsewhere), and the bottom nav, toast and forms pad for the iPhone home indicator (`--spacing-safe-bottom`).
+- The proxy skips `manifest.webmanifest`, `sw.js` and `offline.html`, since browsers fetch them without the session.
+- Install prompts need HTTPS (or `localhost`), so a phone can only install the deployed app.
 
 ## Theme tokens
 

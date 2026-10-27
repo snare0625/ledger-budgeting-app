@@ -4,6 +4,7 @@ import { Clock, House, List, Settings, Target } from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { nav } from "./motion";
 
 const TABS = [
   { segment: null, href: "/", label: "Home", icon: House },
@@ -20,7 +21,9 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-4 bottom-5 z-30 mx-auto flex h-[62px] max-w-[358px] items-center justify-between rounded-full bg-nav px-2.5 shadow-nav"
+      // Named so it stays put while screens slide/crossfade underneath (globals.css)
+      style={{ viewTransitionName: "bottom-nav" }}
+      className="fixed inset-x-4 bottom-[calc(20px+var(--spacing-safe-bottom))] z-30 mx-auto flex h-[62px] max-w-[358px] items-center justify-between rounded-full bg-nav px-2.5 shadow-nav"
     >
       {TABS.map(({ segment: tab, href, label, icon: Icon }) => {
         const active = segment === tab;
@@ -28,10 +31,11 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
+            transitionTypes={nav.tab}
             aria-label={label}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-full p-2.5 transition-colors",
+              "flex items-center gap-2 rounded-full p-2.5 transition active:scale-[0.94]",
               active ? "bg-white px-[15px] text-ink" : "text-white/55 hover:text-white/80",
             )}
           >

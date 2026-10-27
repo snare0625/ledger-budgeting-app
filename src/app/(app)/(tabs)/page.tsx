@@ -1,6 +1,7 @@
 import { Lock } from "lucide-react";
+import type { Viewport } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { nav, Screen, Streamed } from "@/components/app/motion";
 import { ActivityList } from "@/components/app/activity-list";
 import { Skeleton, StatusPill } from "@/components/app/chrome";
 import { Greeting } from "@/components/app/greeting";
@@ -17,13 +18,18 @@ import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CategoryTabs } from "./category-tabs";
 
+// Dark status bar to match the hero
+export const viewport: Viewport = { themeColor: "#0b0c0e" };
+
 export default function HomePage() {
   return (
-    <main className="flex flex-1 flex-col bg-sheet">
-      <Suspense fallback={<HomeSkeleton />}>
-        <Home />
-      </Suspense>
-    </main>
+    <Screen>
+      <main className="flex flex-1 flex-col bg-sheet">
+        <Streamed fallback={<HomeSkeleton />}>
+          <Home />
+        </Streamed>
+      </main>
+    </Screen>
   );
 }
 
@@ -97,6 +103,7 @@ async function Home() {
               <p className="mt-1 text-label font-medium text-sub">{spendingInsight(change)}</p>
               <Link
                 href="/goals"
+                transitionTypes={nav.tab}
                 className="mt-2.5 inline-block text-label font-bold text-blue hover:text-blue-hover"
               >
                 View goals →
@@ -108,10 +115,14 @@ async function Home() {
         <div className="mt-[22px] flex items-center justify-between">
           <h2 className="text-heading text-ink">Recent activity</h2>
           <div className="flex gap-4 text-label font-bold text-blue">
-            <Link href="/activity/new" className="hover:text-blue-hover">
+            <Link href="/activity/new" transitionTypes={nav.forward} className="hover:text-blue-hover">
               + Log
             </Link>
-            <Link href={`/history/${cycle.id}`} className="hover:text-blue-hover">
+            <Link
+              href={`/history/${cycle.id}`}
+              transitionTypes={nav.forward}
+              className="hover:text-blue-hover"
+            >
               View all
             </Link>
           </div>
@@ -168,7 +179,8 @@ function OpenCycleLink({ children }: { children: React.ReactNode }) {
   return (
     <Link
       href="/cycles/new"
-      className="mt-4 block w-full rounded-tile border border-dark-line bg-white/10 p-3 text-center text-label font-bold text-white transition-colors hover:bg-white/15"
+      transitionTypes={nav.forward}
+      className="mt-4 block w-full rounded-tile border border-dark-line bg-white/10 p-3 text-center text-label font-bold text-white transition hover:bg-white/15 active:scale-[0.98]"
     >
       {children}
     </Link>
